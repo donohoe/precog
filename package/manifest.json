@@ -1,0 +1,23 @@
+{
+	"name":        "Precog",
+	"version":     "0.0.0.1",
+	"description": "A extra way to block to block on Twitter",
+	"manifest_version": 2,
+	"icons": {
+		"128": "img/icon_128.png"
+	},
+	"permissions": [
+		"<all_urls>",
+		"tabs",
+		"storage"
+	],
+	"content_security_policy": "script-src 'self'; object-src 'self'",
+	"content_scripts": [
+		{
+			"matches": [ "https://*.twitter.com/*" ],
+			"js":  [ "app.js" ],
+			"run_at": "document_end",
+			"all_frames": false
+		}
+	]
+}
