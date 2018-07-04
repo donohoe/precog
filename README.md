@@ -6,7 +6,7 @@ If it matches, it adds a BLOCK button alogn with their tweet.
 
 ## Installation
 
-This extension is not available in the Chrome WebStTore. You need to run it in Developer mode.
+This extension is not available in the Chrome WebStore. You need to run it in Developer mode.
 
 ### Download
 
@@ -14,13 +14,13 @@ This extension is not available in the Chrome WebStTore. You need to run it in D
 2. Download the file to your Desktop (or wherever) and unzip/uncmpress it (typically just open it)
 3. You should see a folder with some files in it.
 
-### Add as an Extenstion
+### Load the Extenstion
 
 1. Open your Google Chrome browser
 2. Open the Extension Management page by navigating to [chrome://extensions](chrome://extensions)
    - Alteranively you can use the menu: _Window_ > _Extensions_
 3. Enable _Developer Mode_ by clicking the toggle switch next to Developer mode (shoudl be top-right area of browser).
-4. Click the _LOAD UNPACKED_ button and select the extension directory that we previoulsy downloaded.
+4. Click the _LOAD UNPACKED_ button and select the extension directory 'package' that we previoulsy downloaded.
 5. You should see an entry listed in your Extensions called "Precog" with a black baseball hat logo.
 
 ## Notes
