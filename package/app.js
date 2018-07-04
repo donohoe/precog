@@ -1,4 +1,4 @@
-/* v0.1 */
+/* v0.2 */
 
 var ಠ_ಠ = {
 
@@ -6,45 +6,53 @@ var ಠ_ಠ = {
 	domains: [],
 
 	Keywords: [
-		"maga", "irritated", "hypocrisy"
+		"maga", 
+		"precogtest" /* TEST */
 	],
 
 	Users: {
 		Index: [],
-		Data:  []
+		Data:  {}
 	},
 
 	BlockOnPage: [], /* Subset of users we should block on the page */
 
 	init: function() { 
 		this.run();
-		
 		var self = this;
-		document.addEventListener("click", function(){
+
+		document.addEventListener("click", function() {
 			setTimeout(function(){
-				self.run();
-			}, 999);
+				self.findUsersInPage();
+			}, 1199);
 		});
+
+		setInterval(function() {
+			self.findUsersInPage();
+		}, 3001);
 	},
 
 	run: function(){
 		console.time("Precog");
-		this.loadData();
+		this.loadDataUsers();
 		this.findUsersInPage();
 		console.timeEnd("Precog");
 		console.log("USERS:", this.Users );
 	},
 
-	loadData: function() {
-		var keywords = localStorage.getItem( "precog_ext_keywords" ) || false;
-		if (keywords) {
-			this.Keywords = JSON.parse( keywords );
+	loadDataUsers: function() {
+		var users = localStorage.getItem( "precog_ext_users" ) || false;
+		if (users) {
+			this.Users = JSON.parse( users );
 		}
 	},
 
-	saveData: function( self ) {
-		var kws   = JSON.stringify( self.Keywords );
-		localStorage.setItem( "precog_ext_keywords", kws );
+	saveDataUsers: function( self ) {
+		
+		console.log("saveDataUsers users", self.Users );
+		var users = JSON.stringify( self.Users );
+		console.log("saveDataUsers users", users );
+		localStorage.setItem( "precog_ext_users", users );
 	},
 
 	findUsersInPage: function() {
@@ -54,30 +62,40 @@ var ಠ_ಠ = {
 		for (var i=0; i<l; i++) {
 			var userEl = userEls[i];
 			var userId = userEl.getAttribute( "data-user-id" ) || false;
-			this.getUserData( userId );
+			var isScanned = userEl.getAttribute( "data-scanned" ) || false;
+			if (!isScanned) {
+				this.getUserData( userId );
+				userEl.setAttribute( "data-scanned", "1" );
+			}
 		}
 
 	},
 
-	getUserData: function( id ) {
+	getUserData: function( userId ) {
 
-		var id = id.toString(); // "" + id;
+		var userId = userId.toString();
 
-		if (this.Users.Index.indexOf( id ) > -1) {
-			// User does exist
-			// console.log("User exists: ", this.Users.Data[ id ] );
-			return;
-		}
-
-		var self = this;
-		var xhr = new XMLHttpRequest();
-		xhr.open("GET", "https://twitter.com/i/profiles/popup?user_id=" + id + "&wants_hovercard=true&_=" + new Date().getTime(), true);
-		xhr.onreadystatechange = function() {
-			if (xhr.readyState == 4) {
-				self.addUserData( JSON.parse( xhr.responseText ) );
+		if (this.Users.Index.indexOf( userId ) > -1) {
+			var user = this.Users.Data[ "u_" + userId ] || false;
+			if (user) {
+				if (user.block) {
+					this.addBlockButton( user );
+				}
+			} else {
+				console.log("User exists but could not find Data!");
 			}
+
+		} else {
+			var self = this;
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET", "https://twitter.com/i/profiles/popup?user_id=" + userId + "&wants_hovercard=true&_=" + new Date().getTime(), true);
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState == 4) {
+					self.addUserData( JSON.parse( xhr.responseText ) );
+				}
+			}
+			xhr.send();
 		}
-		xhr.send();
 	},
 
 /*
@@ -88,6 +106,9 @@ var ಠ_ಠ = {
 	addUserData: function( data ) {
 
 		var user_id = data.user_id;
+
+		console.log("addUserData", user_id);
+
 		if (this.Users.Index.indexOf( user_id ) === -1) {
 			this.Users.Index.push( user_id );
 		}
@@ -106,9 +127,11 @@ var ಠ_ಠ = {
 			this.addBlockButton( user );
 		}
 
-		this.Users.Data[ user_id ] = user;
+		this.Users.Data[ "u_" + user_id.toString() ] = user;
 
-		this.saveData( this ); /* SAVE */
+		this.saveDataUsers( this ); /* SAVE */
+	
+		// console.log("this.Users", this.Users);
 	},
 
 	getUserBio: function( data ) {
@@ -132,10 +155,10 @@ var ಠ_ಠ = {
 		if (bio.length < 3) {
 			return false;
 		}
-
 		var l = this.Keywords.length;
 		for (var i=0; i<l; i++) {
-			if (bio.indexOf( this.Keywords[i] ) > -1) {
+		/* Check: startsWith, conatins with leading space, contains with leading hash */
+			if (bio.indexOf( this.Keywords[i] ) === 0 || bio.indexOf( " " + this.Keywords[i] ) > 0 || bio.indexOf( "#" + this.Keywords[i] ) > 0) {
 				return this.Keywords[i];
 			}
 		}
@@ -167,6 +190,7 @@ var ಠ_ಠ = {
 					'line-height: 12px;',
 					'padding: 4px 14px;',
 					'margin-top: 0px;',
+					'margin-right: 2px;',
 				].join('');
 
 				div.innerHTML = [
